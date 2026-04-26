@@ -4,3 +4,4 @@ argparse
 streamlit
 pillow
 gdown
+urllib
