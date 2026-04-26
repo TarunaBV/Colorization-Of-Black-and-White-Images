@@ -3,45 +3,62 @@ import numpy as np
 import cv2
 import os
 from PIL import Image
-import urllib.request
+import gdown
 import io
 
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(
     page_title="AI Image Colorizer",
     page_icon="🎨",
     layout="wide"
 )
 
+# ---------------- HEADER ----------------
 st.markdown("<h1 style='text-align:center;'>🎨 AI Image Colorization</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align:center;color:gray;'>Transform black & white images into color using Deep Learning</p>", unsafe_allow_html=True)
 
 st.info("⚡ First run will download AI model (~100MB). Please wait...")
 
-def download_file(url, dest):
-    if not os.path.exists(dest):
-        try:
-            with st.spinner(f"Downloading {os.path.basename(dest)}..."):
-                urllib.request.urlretrieve(url, dest)
-        except Exception:
-            st.error("❌ Failed to download model. Please refresh the app.")
-            st.stop()
-
+# ---------------- PATH SETUP ----------------
 DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(DIR, "model")
 os.makedirs(MODEL_DIR, exist_ok=True)
-
-MODEL_URL = "https://huggingface.co/spaces/akhaliq/colorization/resolve/main/models/colorization_release_v2.caffemodel"
-PROTOTXT_URL = "https://raw.githubusercontent.com/richzhang/colorization/master/models/colorization_deploy_v2.prototxt"
-POINTS_URL = "https://raw.githubusercontent.com/richzhang/colorization/master/resources/pts_in_hull.npy"
 
 MODEL_PATH = os.path.join(MODEL_DIR, "colorization_release_v2.caffemodel")
 PROTOTXT_PATH = os.path.join(MODEL_DIR, "colorization_deploy_v2.prototxt")
 POINTS_PATH = os.path.join(MODEL_DIR, "pts_in_hull.npy")
 
-download_file(MODEL_URL, MODEL_PATH)
-download_file(PROTOTXT_URL, PROTOTXT_PATH)
-download_file(POINTS_URL, POINTS_PATH)
+# ---------------- GOOGLE DRIVE FILE IDs ----------------
+# 👉 Replace this with YOUR OWN FILE ID
+MODEL_FILE_ID = "1AjPyRraTHeJusyjY6800smc3_bRT2Iaw"
 
+# ---------------- DOWNLOAD FUNCTION ----------------
+def download_model():
+    if not os.path.exists(MODEL_PATH):
+        with st.spinner("Downloading AI model (~100MB)..."):
+            url = f"https://drive.google.com/uc?id={MODEL_FILE_ID}"
+            gdown.download(url, MODEL_PATH, quiet=False)
+
+def download_others():
+    import urllib.request
+
+    if not os.path.exists(PROTOTXT_PATH):
+        urllib.request.urlretrieve(
+            "https://raw.githubusercontent.com/richzhang/colorization/master/models/colorization_deploy_v2.prototxt",
+            PROTOTXT_PATH
+        )
+
+    if not os.path.exists(POINTS_PATH):
+        urllib.request.urlretrieve(
+            "https://raw.githubusercontent.com/richzhang/colorization/master/resources/pts_in_hull.npy",
+            POINTS_PATH
+        )
+
+# ---------------- DOWNLOAD FILES ----------------
+download_model()
+download_others()
+
+# ---------------- LOAD MODEL ----------------
 @st.cache_resource
 def load_model():
     net = cv2.dnn.readNetFromCaffe(PROTOTXT_PATH, MODEL_PATH)
@@ -58,6 +75,7 @@ def load_model():
 
 net = load_model()
 
+# ---------------- FILE UPLOAD ----------------
 uploaded_file = st.file_uploader("📤 Upload a Black & White Image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
@@ -65,13 +83,13 @@ if uploaded_file is not None:
     image = np.array(image)
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
-    # MOBILE TOGGLE
     mobile_view = st.checkbox("📱 Mobile View (stack images)")
 
     if mobile_view:
         st.subheader("🖤 Original Image")
         st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), use_container_width=True)
 
+    # ---------------- COLORIZATION ----------------
     with st.spinner("Colorizing image... 🎨"):
         scaled = image.astype("float32") / 255.0
         lab = cv2.cvtColor(scaled, cv2.COLOR_BGR2LAB)
@@ -96,7 +114,7 @@ if uploaded_file is not None:
         st.subheader("🌈 Colorized Image")
         st.image(cv2.cvtColor(colorized, cv2.COLOR_BGR2RGB), use_container_width=True)
     else:
-        col1, col2 = st.columns([1, 1])
+        col1, col2 = st.columns(2)
 
         with col1:
             st.subheader("🖤 Original")
@@ -106,6 +124,7 @@ if uploaded_file is not None:
             st.subheader("🌈 Colorized")
             st.image(cv2.cvtColor(colorized, cv2.COLOR_BGR2RGB), use_container_width=True)
 
+    # ---------------- DOWNLOAD BUTTON ----------------
     _, buffer = cv2.imencode('.png', colorized)
     byte_io = io.BytesIO(buffer)
 
