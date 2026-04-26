@@ -1,7 +1,5 @@
-numpy
-opencv-python-headless
-argparse
-streamlit
-pillow
-gdown
-urllib
+streamlit==1.32.2
+numpy==1.26.4
+opencv-python-headless==4.9.0.80
+pillow==10.2.0
+gdown==5.1.0
