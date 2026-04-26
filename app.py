@@ -6,6 +6,8 @@ from PIL import Image
 import io
 import urllib.request
 
+st.info("⚡ First run will download AI model (~100MB). Please wait...")
+
 def download_file(url, dest):
     if not os.path.exists(dest):
         try:
