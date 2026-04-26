@@ -30,7 +30,7 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(DIR, "model")
 os.makedirs(MODEL_DIR, exist_ok=True)
 
-MODEL_URL = "https://raw.githubusercontent.com/richzhang/colorization/master/models/colorization_release_v2.caffemodel"
+MODEL_URL = "https://huggingface.co/spaces/akhaliq/colorization/resolve/main/models/colorization_release_v2.caffemodel"
 PROTOTXT_URL = "https://raw.githubusercontent.com/richzhang/colorization/master/models/colorization_deploy_v2.prototxt"
 POINTS_URL = "https://raw.githubusercontent.com/richzhang/colorization/master/resources/pts_in_hull.npy"
 
