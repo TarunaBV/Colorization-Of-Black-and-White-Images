@@ -8,8 +8,12 @@ import urllib.request
 
 def download_file(url, dest):
     if not os.path.exists(dest):
-        with st.spinner(f"Downloading {os.path.basename(dest)}..."):
-            urllib.request.urlretrieve(url, dest)
+        try:
+            with st.spinner(f"Downloading {os.path.basename(dest)}..."):
+                urllib.request.urlretrieve(url, dest)
+        except Exception as e:
+            st.error("❌ Failed to download model. Please try again later.")
+            st.stop()
 
 # Page config
 st.set_page_config(page_title="Image Colorization", layout="centered")
@@ -20,8 +24,10 @@ st.write("Upload a grayscale image and see it come to life with colors!")
 # Use relative path (IMPORTANT for portability)
 DIR = os.path.dirname(os.path.abspath(__file__))
 
-MODEL_URL = "https://github.com/richzhang/colorization/blob/master/models/colorization_release_v2.caffemodel?raw=true"
+MODEL_URL = "https://raw.githubusercontent.com/richzhang/colorization/master/models/colorization_release_v2.caffemodel"
+
 PROTOTXT_URL = "https://raw.githubusercontent.com/richzhang/colorization/master/models/colorization_deploy_v2.prototxt"
+
 POINTS_URL = "https://raw.githubusercontent.com/richzhang/colorization/master/resources/pts_in_hull.npy"
 
 MODEL_PATH = os.path.join(DIR, "model/colorization_release_v2.caffemodel")
