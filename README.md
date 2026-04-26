@@ -82,7 +82,6 @@ python colorize.py --image path_to_image
 python colorize.py --image images/input.jpg
 ```
 
----
 
 ## Output
 
