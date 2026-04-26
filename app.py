@@ -4,6 +4,12 @@ import cv2
 import os
 from PIL import Image
 import io
+import urllib.request
+
+def download_file(url, dest):
+    if not os.path.exists(dest):
+        with st.spinner(f"Downloading {os.path.basename(dest)}..."):
+            urllib.request.urlretrieve(url, dest)
 
 # Page config
 st.set_page_config(page_title="Image Colorization", layout="centered")
@@ -13,14 +19,30 @@ st.write("Upload a grayscale image and see it come to life with colors!")
 
 # Use relative path (IMPORTANT for portability)
 DIR = os.path.dirname(os.path.abspath(__file__))
+
+MODEL_URL = "https://github.com/richzhang/colorization/blob/master/models/colorization_release_v2.caffemodel?raw=true"
+PROTOTXT_URL = "https://raw.githubusercontent.com/richzhang/colorization/master/models/colorization_deploy_v2.prototxt"
+POINTS_URL = "https://raw.githubusercontent.com/richzhang/colorization/master/resources/pts_in_hull.npy"
+
+MODEL_PATH = os.path.join(DIR, "model/colorization_release_v2.caffemodel")
+PROTOTXT_PATH = os.path.join(DIR, "model/colorization_deploy_v2.prototxt")
+POINTS_PATH = os.path.join(DIR, "model/pts_in_hull.npy")
+
+os.makedirs(os.path.join(DIR, "model"), exist_ok=True)
+
+download_file(MODEL_URL, MODEL_PATH)
+download_file(PROTOTXT_URL, PROTOTXT_PATH)
+download_file(POINTS_URL, POINTS_PATH)
+
+
 PROTOTXT = os.path.join(DIR, "model/colorization_deploy_v2.prototxt")
 POINTS = os.path.join(DIR, "model/pts_in_hull.npy")
 MODEL = os.path.join(DIR, "model/colorization_release_v2.caffemodel")
 
 @st.cache_resource
 def load_model():
-    net = cv2.dnn.readNetFromCaffe(PROTOTXT, MODEL)
-    pts = np.load(POINTS)
+    net = cv2.dnn.readNetFromCaffe(PROTOTXT_PATH, MODEL_PATH)
+    pts = np.load(POINTS_PATH)
 
     class8 = net.getLayerId("class8_ab")
     conv8 = net.getLayerId("conv8_313_rh")
