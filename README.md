@@ -6,7 +6,6 @@ This project focuses on automatically converting grayscale (black and white) ima
 
 The model is based on the Caffe framework and uses learned color distributions to predict realistic colors for grayscale inputs.
 
----
 
 ## Features
 
@@ -15,7 +14,6 @@ The model is based on the Caffe framework and uses learned color distributions t
 * Simple command-line execution
 * High-quality and realistic outputs
 
----
 
 ## Technologies Used
 
@@ -24,7 +22,6 @@ The model is based on the Caffe framework and uses learned color distributions t
 * NumPy
 * Caffe Model (Pre-trained)
 
----
 
 ## Project Structure
 
@@ -43,7 +40,6 @@ colorize/
 │── requirements.txt
 ```
 
----
 
 ## Installation
 
@@ -60,7 +56,6 @@ cd colorization-project
 pip install -r requirements.txt
 ```
 
----
 
 ## Download Pre-trained Model
 
@@ -72,7 +67,6 @@ Download the following files and place them inside the `model/` folder:
 
 (You can find these from OpenCV’s official GitHub or colorization model sources.)
 
----
 
 ## Usage
 
@@ -97,14 +91,12 @@ python colorize.py --image images/input.jpg
   * Original Image
   * Colorized Image
 
----
 
 ## Error Handling
 
 * Checks if the image path exists
 * Handles invalid or unreadable images
 
----
 
 ## How It Works
 
@@ -115,7 +107,6 @@ python colorize.py --image images/input.jpg
 5. Merge L + (a,b) channels
 6. Convert back to BGR format
 
----
 
 ## Future Improvements
 
@@ -124,13 +115,11 @@ python colorize.py --image images/input.jpg
 * Video colorization support
 * Model fine-tuning for better accuracy
 
----
 
 ## Author
 
 Taruna B V
 
----
 
 ## Acknowledgment
 
