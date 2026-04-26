@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import os
 from PIL import Image
+import io
 
 # Page config
 st.set_page_config(page_title="Image Colorization", layout="centered")
@@ -68,4 +69,13 @@ if uploaded_file is not None:
     st.subheader("Colorized Image")
     st.image(cv2.cvtColor(colorized, cv2.COLOR_BGR2RGB), use_container_width=True)
 
-    st.success("Done! 🎉")
+    _, buffer = cv2.imencode('.png', colorized)
+    byte_io = io.BytesIO(buffer)
+
+    st.download_button(
+        label="⬇️ Download Image",
+        data=byte_io,
+        file_name="colorized.png",
+        mime="image/png",
+        use_container_width=True
+    )
