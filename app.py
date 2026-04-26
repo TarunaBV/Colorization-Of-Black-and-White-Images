@@ -7,17 +7,12 @@ import gdown
 import io
 
 # ---------------- PAGE CONFIG ----------------
-st.set_page_config(
-    page_title="AI Image Colorizer",
-    page_icon="🎨",
-    layout="wide"
-)
+st.set_page_config(page_title="AI Image Colorizer", layout="wide")
 
-# ---------------- HEADER ----------------
 st.markdown("<h1 style='text-align:center;'>🎨 AI Image Colorization</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center;color:gray;'>Transform black & white images into color using Deep Learning</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center;color:gray;'>Convert black & white images into color using Deep Learning</p>", unsafe_allow_html=True)
 
-st.info("⚡ First run will download AI model (~100MB). Please wait...")
+st.info("⚡ First run will download AI model (~120MB). Please wait...")
 
 # ---------------- PATH SETUP ----------------
 DIR = os.path.dirname(os.path.abspath(__file__))
@@ -29,34 +24,22 @@ PROTOTXT_PATH = os.path.join(MODEL_DIR, "colorization_deploy_v2.prototxt")
 POINTS_PATH = os.path.join(MODEL_DIR, "pts_in_hull.npy")
 
 # ---------------- GOOGLE DRIVE FILE IDs ----------------
-# 👉 Replace this with YOUR OWN FILE ID
-MODEL_FILE_ID = "1AjPyRraTHeJusyjY6800smc3_bRT2Iaw"
+# 🔥 REPLACE THESE WITH YOUR FILE IDs
+MODEL_ID = "YOUR_MODEL_ID"
+PROTOTXT_ID = "YOUR_PROTOTXT_ID"
+POINTS_ID = "YOUR_POINTS_ID"
 
 # ---------------- DOWNLOAD FUNCTION ----------------
-def download_model():
-    if not os.path.exists(MODEL_PATH):
-        with st.spinner("Downloading AI model (~100MB)..."):
-            url = f"https://drive.google.com/uc?id={MODEL_FILE_ID}"
-            gdown.download(url, MODEL_PATH, quiet=False)
-
-def download_others():
-    import urllib.request
-
-    if not os.path.exists(PROTOTXT_PATH):
-        urllib.request.urlretrieve(
-            "https://raw.githubusercontent.com/richzhang/colorization/master/models/colorization_deploy_v2.prototxt",
-            PROTOTXT_PATH
-        )
-
-    if not os.path.exists(POINTS_PATH):
-        urllib.request.urlretrieve(
-            "https://raw.githubusercontent.com/richzhang/colorization/master/resources/pts_in_hull.npy",
-            POINTS_PATH
-        )
+def download_file(file_id, output):
+    if not os.path.exists(output):
+        with st.spinner(f"Downloading {os.path.basename(output)}..."):
+            url = f"https://drive.google.com/uc?id={file_id}"
+            gdown.download(url, output, quiet=False)
 
 # ---------------- DOWNLOAD FILES ----------------
-download_model()
-download_others()
+download_file(MODEL_ID, MODEL_PATH)
+download_file(PROTOTXT_ID, PROTOTXT_PATH)
+download_file(POINTS_ID, POINTS_PATH)
 
 # ---------------- LOAD MODEL ----------------
 @st.cache_resource
@@ -83,11 +66,10 @@ if uploaded_file is not None:
     image = np.array(image)
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
-    mobile_view = st.checkbox("📱 Mobile View (stack images)")
+    st.markdown("---")
 
-    if mobile_view:
-        st.subheader("🖤 Original Image")
-        st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), use_container_width=True)
+    # 📱 Mobile toggle
+    is_mobile = st.checkbox("📱 Mobile View")
 
     # ---------------- COLORIZATION ----------------
     with st.spinner("Colorizing image... 🎨"):
@@ -99,32 +81,37 @@ if uploaded_file is not None:
         L -= 50
 
         net.setInput(cv2.dnn.blobFromImage(L))
-        ab = net.forward()[0, :, :, :].transpose((1, 2, 0))
+        ab = net.forward()[0].transpose((1, 2, 0))
 
         ab = cv2.resize(ab, (image.shape[1], image.shape[0]))
-
         L = cv2.split(lab)[0]
-        colorized = np.concatenate((L[:, :, np.newaxis], ab), axis=2)
 
+        colorized = np.concatenate((L[:, :, np.newaxis], ab), axis=2)
         colorized = cv2.cvtColor(colorized, cv2.COLOR_LAB2BGR)
         colorized = np.clip(colorized, 0, 1)
         colorized = (255 * colorized).astype("uint8")
 
-    if mobile_view:
-        st.subheader("🌈 Colorized Image")
+    # ---------------- DISPLAY ----------------
+    if is_mobile:
+        st.subheader("Original Image")
+        st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), use_container_width=True)
+
+        st.subheader("Colorized Image")
         st.image(cv2.cvtColor(colorized, cv2.COLOR_BGR2RGB), use_container_width=True)
     else:
         col1, col2 = st.columns(2)
 
         with col1:
-            st.subheader("🖤 Original")
+            st.subheader("Original Image")
             st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), use_container_width=True)
 
         with col2:
-            st.subheader("🌈 Colorized")
+            st.subheader("Colorized Image")
             st.image(cv2.cvtColor(colorized, cv2.COLOR_BGR2RGB), use_container_width=True)
 
-    # ---------------- DOWNLOAD BUTTON ----------------
+    st.markdown("---")
+
+    # ---------------- DOWNLOAD ----------------
     _, buffer = cv2.imencode('.png', colorized)
     byte_io = io.BytesIO(buffer)
 
