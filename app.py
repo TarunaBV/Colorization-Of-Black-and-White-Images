@@ -29,11 +29,12 @@ PROTOTXT_ID = "YOUR_PROTOTXT_ID"
 POINTS_ID = "YOUR_POINTS_ID"
 
 # ---------------- DOWNLOAD FUNCTION ----------------
+
 def download_file(file_id, output):
     if not os.path.exists(output):
-        with st.spinner(f"Downloading {os.path.basename(output)}..."):
+        with st.spinner("Downloading model (~120MB)..."):
             url = f"https://drive.google.com/uc?id={file_id}"
-            gdown.download(url, output, quiet=False)
+            gdown.download(url, output, quiet=False, fuzzy=True)
 
 # ---------------- DOWNLOAD FILES ----------------
 download_file(MODEL_ID, MODEL_PATH)
