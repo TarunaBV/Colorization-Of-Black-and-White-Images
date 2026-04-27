@@ -2,7 +2,6 @@ import streamlit as st
 import numpy as np
 import cv2
 import os
-from PIL import Image
 import gdown
 import io
 
@@ -62,9 +61,8 @@ net = load_model()
 uploaded_file = st.file_uploader("📤 Upload a Black & White Image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    image = Image.open(uploaded_file).convert("RGB")
-    image = np.array(image)
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+    image = cv2.imdecode(file_bytes, 1)
 
     st.markdown("---")
 
