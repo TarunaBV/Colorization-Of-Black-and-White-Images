@@ -24,9 +24,9 @@ POINTS_PATH = os.path.join(MODEL_DIR, "pts_in_hull.npy")
 
 # ---------------- GOOGLE DRIVE FILE IDs ----------------
 # 🔥 REPLACE THESE WITH YOUR FILE IDs
-MODEL_ID = "YOUR_MODEL_ID"
-PROTOTXT_ID = "YOUR_PROTOTXT_ID"
-POINTS_ID = "YOUR_POINTS_ID"
+MODEL_ID = "1AjPyRraTHeJusyjY6800smc3_bRT2Iaw"
+PROTOTXT_ID = "1OtdgRBCKfwDR1845yIcNoT1YSREGrnF8"
+POINTS_ID = "106Ngvm_ImXrrKI7twl92xG8N42_11tuU"
 
 # ---------------- DOWNLOAD FUNCTION ----------------
 
