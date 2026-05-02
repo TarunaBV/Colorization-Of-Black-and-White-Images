@@ -2,44 +2,22 @@ import streamlit as st
 import numpy as np
 import cv2
 import os
-import gdown
+from PIL import Image
 import io
 
-# ---------------- PAGE CONFIG ----------------
+# ---------------- CONFIG ----------------
 st.set_page_config(page_title="AI Image Colorizer", layout="wide")
 
-st.markdown("<h1 style='text-align:center;'>🎨 AI Image Colorization</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center;color:gray;'>Convert black & white images into color using Deep Learning</p>", unsafe_allow_html=True)
+st.title("🎨 AI Image Colorization")
+st.write("Upload a black & white image and get a colorized version")
 
-st.info("⚡ First run will download AI model (~120MB). Please wait...")
-
-# ---------------- PATH SETUP ----------------
+# ---------------- PATHS ----------------
 DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(DIR, "model")
-os.makedirs(MODEL_DIR, exist_ok=True)
 
 MODEL_PATH = os.path.join(MODEL_DIR, "colorization_release_v2.caffemodel")
 PROTOTXT_PATH = os.path.join(MODEL_DIR, "colorization_deploy_v2.prototxt")
 POINTS_PATH = os.path.join(MODEL_DIR, "pts_in_hull.npy")
-
-# ---------------- GOOGLE DRIVE FILE IDs ----------------
-# 🔥 REPLACE THESE WITH YOUR FILE IDs
-MODEL_ID = "1AjPyRraTHeJusyjY6800smc3_bRT2Iaw"
-PROTOTXT_ID = "1OtdgRBCKfwDR1845yIcNoT1YSREGrnF8"
-POINTS_ID = "106Ngvm_ImXrrKI7twl92xG8N42_11tuU"
-
-# ---------------- DOWNLOAD FUNCTION ----------------
-
-def download_file(file_id, output):
-    if not os.path.exists(output):
-        with st.spinner("Downloading model (~120MB)..."):
-            url = f"https://drive.google.com/uc?id={file_id}"
-            gdown.download(url, output, quiet=False, fuzzy=True)
-
-# ---------------- DOWNLOAD FILES ----------------
-download_file(MODEL_ID, MODEL_PATH)
-download_file(PROTOTXT_ID, PROTOTXT_PATH)
-download_file(POINTS_ID, POINTS_PATH)
 
 # ---------------- LOAD MODEL ----------------
 @st.cache_resource
@@ -58,20 +36,21 @@ def load_model():
 
 net = load_model()
 
-# ---------------- FILE UPLOAD ----------------
-uploaded_file = st.file_uploader("📤 Upload a Black & White Image", type=["jpg", "jpeg", "png"])
+# ---------------- UPLOAD ----------------
+uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
 
-if uploaded_file is not None:
-    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-    image = cv2.imdecode(file_bytes, 1)
+if uploaded_file:
+    image = Image.open(uploaded_file).convert("RGB")
+    image = np.array(image)
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
-    st.markdown("---")
+    col1, col2 = st.columns(2)
 
-    # 📱 Mobile toggle
-    is_mobile = st.checkbox("📱 Mobile View")
+    with col1:
+        st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), caption="Original", use_container_width=True)
 
-    # ---------------- COLORIZATION ----------------
-    with st.spinner("Colorizing image... 🎨"):
+    # Colorization
+    with st.spinner("Colorizing..."):
         scaled = image.astype("float32") / 255.0
         lab = cv2.cvtColor(scaled, cv2.COLOR_BGR2LAB)
 
@@ -90,36 +69,9 @@ if uploaded_file is not None:
         colorized = np.clip(colorized, 0, 1)
         colorized = (255 * colorized).astype("uint8")
 
-    # ---------------- DISPLAY ----------------
-    if is_mobile:
-        st.subheader("Original Image")
-        st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), use_container_width=True)
+    with col2:
+        st.image(cv2.cvtColor(colorized, cv2.COLOR_BGR2RGB), caption="Colorized", use_container_width=True)
 
-        st.subheader("Colorized Image")
-        st.image(cv2.cvtColor(colorized, cv2.COLOR_BGR2RGB), use_container_width=True)
-    else:
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.subheader("Original Image")
-            st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), use_container_width=True)
-
-        with col2:
-            st.subheader("Colorized Image")
-            st.image(cv2.cvtColor(colorized, cv2.COLOR_BGR2RGB), use_container_width=True)
-
-    st.markdown("---")
-
-    # ---------------- DOWNLOAD ----------------
+    # Download
     _, buffer = cv2.imencode('.png', colorized)
-    byte_io = io.BytesIO(buffer)
-
-    st.download_button(
-        label="⬇️ Download Colorized Image",
-        data=byte_io,
-        file_name="colorized.png",
-        mime="image/png",
-        use_container_width=True
-    )
-
-    st.success("✅ Colorization Complete!")
+    st.download_button("⬇️ Download", buffer.tobytes(), "colorized.png", "image/png")
