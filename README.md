@@ -40,6 +40,13 @@ colorize/
 │── requirements.txt
 ```
 
+## Model
+caffe model can't be uploaded due to its size.
+Drive Link : 
+```
+https://drive.google.com/file/d/1AjPyRraTHeJusyjY6800smc3_bRT2Iaw/view?usp=sharing
+```
+
 
 ## Installation
 
