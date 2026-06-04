@@ -96,6 +96,7 @@ python colorize.py --image images/input.jpg
 
   * Original Image
   * Colorized Image
+  * A download button to download the colorized image
 
 
 ## Error Handling
